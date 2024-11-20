@@ -1,0 +1,36 @@
+{
+  "name": "env-var-manager",
+  "version": "1.0.0",
+  "description": "A tiny helper tool that lets you define a set of environment variables including validation rules",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "repository": "git@github.com:maks-io/env-var-manager.git",
+  "author": "Markus Kurzmann <markus@kurzmann.io>",
+  "license": "MIT",
+  "keywords": [
+    "env var",
+    "env vars",
+    "environment variable",
+    "environment variables",
+    "validation"
+  ],
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "clear-build-folder": "rm -rf ./build",
+    "transpile": "tsc -p tsconfig.json",
+    "fix-paths": "tsc-alias",
+    "build": "yarn clear-build-folder && yarn transpile && yarn fix-paths",
+    "dev": "yarn nodemon"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.1",
+    "nodemon": "^3.1.7",
+    "prettier": "^3.3.3",
+    "tsc-alias": "^1.8.10"
+  },
+  "dependencies": {
+    "ansi-colors": "^4.1.3"
+  }
+}
