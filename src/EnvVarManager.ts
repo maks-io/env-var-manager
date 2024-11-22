@@ -1,20 +1,18 @@
 import { IEnvVarConfig } from "./types/IEnvVarConfig";
-import { bgRed, green, red, blue } from "ansi-colors";
+import { bgRed, blue, green, red } from "ansi-colors";
 
-export class EnvVarManager<T extends string> {
-  private configs: IEnvVarConfig<T>;
+export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
+  private configs: C;
   private cache: Partial<Record<T, any>> = {};
 
-  constructor(configs: IEnvVarConfig<T>) {
+  constructor(configs: C) {
     this.configs = configs;
   }
 
-  getEnvVar<K extends T>(
-    key: K,
-  ): ReturnType<NonNullable<IEnvVarConfig<T>[K]["transform"]>> {
+  getEnvVar<K extends T>(key: K): ReturnType<C[K]["transform"]> {
     if (!(key in this.cache)) {
       const config = this.configs[key];
-      const rawValue = process.env[key];
+      const rawValue = config.retrieve();
       if (rawValue === undefined) {
         throw new Error(`Environment variable ${key} is not set.`);
       }

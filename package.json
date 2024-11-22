@@ -1,6 +1,6 @@
 {
   "name": "env-var-manager",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A tiny helper tool that lets you define a set of environment variables including validation rules",
   "main": "build/index.js",
   "types": "build/index.d.ts",

@@ -1,6 +1,9 @@
-export type IEnvVarSingleConfig<T> = {
+import { ITransformFn } from "./ITransformFn";
+import { IValidateFn } from "./IValidateFn";
+
+export type IEnvVarSingleConfig = {
   retrieve: () => string | undefined;
-  validate?: (value: T) => boolean;
-  transform?: (rawValue: string) => T;
+  validate?: IValidateFn<any>;
+  transform?: ITransformFn<any>;
   invalidValueErrorMsg?: string;
 };
