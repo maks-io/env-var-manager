@@ -3,7 +3,7 @@ import { IValidateFn } from "./IValidateFn";
 
 export type IEnvVarSingleConfig = {
   retrieve: () => string | undefined;
+  transform: ITransformFn<any>;
   validate?: IValidateFn<any>;
-  transform?: ITransformFn<any>;
   invalidValueErrorMsg?: string;
 };
