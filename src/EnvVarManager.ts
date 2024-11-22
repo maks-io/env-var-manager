@@ -1,5 +1,6 @@
 import { IEnvVarConfig } from "./types/IEnvVarConfig";
-import { bgRed, blue, green, red } from "ansi-colors";
+import { bgRed, blue, cyan, green, red } from "ansi-colors";
+import { formatValue } from "./formatValue";
 
 export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
   private configs: C;
@@ -34,7 +35,7 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
         );
       }
       this.cache[envVarName] = transformError
-        ? "Error occurred during transform fn usage!"
+        ? `Error occurred during transform fn usage: ${transformError}`
         : transformedValue;
     }
     return this.cache[envVarName];
@@ -58,6 +59,7 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
         currentValueRaw: string | undefined;
         currentValueTransformed?: T;
         reason: string;
+        transformError?: string;
       }[],
       missing: [] as T[],
     };
@@ -69,20 +71,21 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
         results.missing.push(key);
       } else {
         const config = this.configs[key];
-        let transformErrorOccurred = false;
+        let transformError = "";
         let transformedValue;
         try {
           transformedValue = config.transform
             ? config.transform(rawValue)
             : rawValue;
         } catch (e) {
-          transformErrorOccurred = true;
+          transformError = e.message;
         }
-        if (transformErrorOccurred) {
+        if (transformError) {
           results.invalid.push({
             envName: key,
             currentValueRaw: rawValue,
-            reason: "Error occurred during transform fn usage!",
+            reason: `Error occurred during transform fn usage`,
+            transformError,
           });
         } else if (config.validate) {
           const isValid = config.validate(transformedValue);
@@ -119,10 +122,28 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
       const headerInvalid = red(
         `${nrOfInvalid} of ${nrTotal} environment variable(s) are invalid:`,
       );
+
       const errorMsgInvalid =
         nrOfInvalid === 0
           ? ""
-          : `${headerInvalid}\n${results.invalid.map((ri) => `\t*) ${bgRed(ri.envName)} → current value is '${red(ri.currentValueRaw)}' → ${ri.reason || "(No explanation given)"}`).join("\n")}\n`;
+          : `${headerInvalid}\n${results.invalid
+              .map((ri) => {
+                const { transformError } = ri;
+                const rawAndTransformedDiffer =
+                  ri.currentValueRaw !== ri.currentValueTransformed;
+
+                const noExplanationGiven =
+                  "(No explanation given why it is invalid, check validate function!)";
+
+                const explanation = transformError
+                  ? `current raw value is ${formatValue(ri.currentValueRaw, red)}\n\t   → ${ri.reason}:\n\t     ${ri.transformError}`
+                  : !rawAndTransformedDiffer
+                    ? `current value is ${formatValue(ri.currentValueRaw, red)}\n\t   → ${ri.reason || noExplanationGiven}`
+                    : `current raw value is ${formatValue(ri.currentValueRaw, cyan)}, current transformed value is ${formatValue(ri.currentValueTransformed, red)}\n\t   → ${ri.reason || noExplanationGiven}`;
+
+                return `\t*) ${bgRed(ri.envName)}\n\t   → ${explanation}`;
+              })
+              .join("\n")}\n`;
 
       const validMsg = green(
         `${nrOfValid} of ${nrTotal} environment variable(s) are ok.`,
