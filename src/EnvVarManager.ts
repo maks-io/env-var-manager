@@ -9,18 +9,35 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     this.configs = configs;
   }
 
-  getEnvVar<K extends T>(key: K): ReturnType<C[K]["transform"]> {
-    if (!(key in this.cache)) {
-      const config = this.configs[key];
+  getEnvVar<K extends T>(
+    envVarName: K,
+    throwError = true,
+  ): ReturnType<C[K]["transform"]> {
+    if (!(envVarName in this.cache)) {
+      const config = this.configs[envVarName];
       const rawValue = config.retrieve();
       if (rawValue === undefined) {
-        throw new Error(`Environment variable ${key} is not set.`);
+        throw new Error(`Environment variable '${envVarName}' is not set.`);
       }
-      this.cache[key] = config.transform
-        ? config.transform(rawValue)
-        : rawValue;
+      let transformError = "";
+      let transformedValue;
+      try {
+        transformedValue = config.transform
+          ? config.transform(rawValue)
+          : rawValue;
+      } catch (e) {
+        transformError = e.message;
+      }
+      if (transformError && throwError) {
+        throw new Error(
+          `Environment variable '${envVarName}' failed to transform. Error was: ${transformError}`,
+        );
+      }
+      this.cache[envVarName] = transformError
+        ? "Error occurred during transform fn usage!"
+        : transformedValue;
     }
-    return this.cache[key];
+    return this.cache[envVarName];
   }
 
   validateAll(
