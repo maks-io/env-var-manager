@@ -1,5 +1,5 @@
-import { greenBright, StyleFunction } from "ansi-colors";
+import chalk, { ChalkInstance } from "chalk";
 
-export const formatValue = (value: any, colorFn: StyleFunction) => {
-  return colorFn(`${value} ${greenBright(`[${typeof value}]`)}`);
+export const formatValue = (value: any, colorFn: ChalkInstance) => {
+  return colorFn(`${value} ${chalk.greenBright(`[${typeof value}]`)}`);
 };

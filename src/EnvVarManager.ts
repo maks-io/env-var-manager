@@ -1,5 +1,5 @@
 import { IEnvVarConfig } from "./types/IEnvVarConfig";
-import { bgRed, blue, cyan, green, red } from "ansi-colors";
+import chalk, { supportsColor } from "chalk";
 import { formatValue } from "./formatValue";
 
 export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
@@ -17,8 +17,12 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     if (!(envVarName in this.cache)) {
       const config = this.configs[envVarName];
       const rawValue = config.retrieve();
+      let retrieveError = "";
       if (rawValue === undefined) {
-        throw new Error(`Environment variable '${envVarName}' is not set.`);
+        retrieveError = `Environment variable '${envVarName}' is not set.`;
+      }
+      if (retrieveError && throwError) {
+        throw new Error(retrieveError);
       }
       let transformError = "";
       let transformedValue;
@@ -49,8 +53,12 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     invalid: { envName: string; reason: string }[];
     missing: T[];
   } {
-    const reportHeader = blue(`///// Environment Variable Validation /////\n`);
-    const reportFooter = blue(`\n///////////////////////////////////////////`);
+    const reportHeader = chalk.blue(
+      `///// Environment Variable Validation /////\n`,
+    );
+    const reportFooter = chalk.blue(
+      `\n///////////////////////////////////////////`,
+    );
 
     const results = {
       valid: [] as T[],
@@ -111,15 +119,15 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     const nrTotal = nrOfValid + nrOfInvalid + nrOfMissing;
 
     if (throwError && (nrOfMissing > 0 || nrOfInvalid > 0)) {
-      const headerMissing = red(
+      const headerMissing = chalk.red(
         `${nrOfMissing} of ${nrTotal} environment variable(s) are missing:`,
       );
       const errorMsgMissing =
         nrOfMissing === 0
           ? ""
-          : `${headerMissing}\n${results.missing.map((rm) => `\t*) ${bgRed(rm)}`).join("\n")}\n`;
+          : `${headerMissing}\n${results.missing.map((rm) => `\t*) ${chalk.bgRedBright(rm)}`).join("\n")}\n`;
 
-      const headerInvalid = red(
+      const headerInvalid = chalk.red(
         `${nrOfInvalid} of ${nrTotal} environment variable(s) are invalid:`,
       );
 
@@ -136,25 +144,30 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
                   "(No explanation given why it is invalid, check validate function!)";
 
                 const explanation = transformError
-                  ? `current raw value is ${formatValue(ri.currentValueRaw, red)}\n\t   → ${ri.reason}:\n\t     ${ri.transformError}`
+                  ? `current raw value is ${formatValue(ri.currentValueRaw, chalk.red)}\n\t   → ${ri.reason}:\n\t     ${ri.transformError}`
                   : !rawAndTransformedDiffer
-                    ? `current value is ${formatValue(ri.currentValueRaw, red)}\n\t   → ${ri.reason || noExplanationGiven}`
-                    : `current raw value is ${formatValue(ri.currentValueRaw, cyan)}, current transformed value is ${formatValue(ri.currentValueTransformed, red)}\n\t   → ${ri.reason || noExplanationGiven}`;
+                    ? `current value is ${formatValue(ri.currentValueRaw, chalk.red)}\n\t   → ${ri.reason || noExplanationGiven}`
+                    : `current raw value is ${formatValue(ri.currentValueRaw, chalk.cyan)}, current transformed value is ${formatValue(ri.currentValueTransformed, chalk.red)}\n\t   → ${ri.reason || noExplanationGiven}`;
 
-                return `\t*) ${bgRed(ri.envName)}\n\t   → ${explanation}`;
+                return `\t*) ${chalk.bgRedBright(ri.envName)}\n\t   → ${explanation}`;
               })
               .join("\n")}\n`;
 
-      const validMsg = green(
+      const validMsg = chalk.green(
         `${nrOfValid} of ${nrTotal} environment variable(s) are ok.`,
       );
 
       const errorMsg = `\n${reportHeader}${errorMsgMissing}${errorMsgInvalid}${validMsg}${reportFooter}`;
-      throw new Error(errorMsg);
+
+      console.info(errorMsg);
+
+      throw new Error(
+        "env-var-manager - validating environment variables failed\nPlease check the console for details!",
+      );
     }
 
     if (reportSuccess && (nrOfMissing === 0 || nrOfInvalid === 0)) {
-      const validMsg = green(
+      const validMsg = chalk.green(
         `${nrOfValid} of ${nrTotal} environment variable(s) are ok.`,
       );
       console.log(`${reportHeader}${validMsg}${reportFooter}`);
