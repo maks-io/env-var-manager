@@ -1,5 +1,5 @@
 import { IEnvVarConfig } from "./types/IEnvVarConfig";
-import chalk, { supportsColor } from "chalk";
+import { bgRed, bgRedBright, blue, cyan, green, red } from "ansi-colors";
 import { formatValue } from "./formatValue";
 
 export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
@@ -53,12 +53,8 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     invalid: { envName: string; reason: string }[];
     missing: T[];
   } {
-    const reportHeader = chalk.blue(
-      `///// Environment Variable Validation /////\n`,
-    );
-    const reportFooter = chalk.blue(
-      `\n///////////////////////////////////////////`,
-    );
+    const reportHeader = blue(`///// Environment Variable Validation /////\n`);
+    const reportFooter = blue(`\n///////////////////////////////////////////`);
 
     const results = {
       valid: [] as T[],
@@ -119,15 +115,15 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     const nrTotal = nrOfValid + nrOfInvalid + nrOfMissing;
 
     if (throwError && (nrOfMissing > 0 || nrOfInvalid > 0)) {
-      const headerMissing = chalk.red(
+      const headerMissing = red(
         `${nrOfMissing} of ${nrTotal} environment variable(s) are missing:`,
       );
       const errorMsgMissing =
         nrOfMissing === 0
           ? ""
-          : `${headerMissing}\n${results.missing.map((rm) => `\t*) ${chalk.bgRedBright(rm)}`).join("\n")}\n`;
+          : `${headerMissing}\n${results.missing.map((rm) => `\t*) ${bgRedBright(rm)}`).join("\n")}\n`;
 
-      const headerInvalid = chalk.red(
+      const headerInvalid = red(
         `${nrOfInvalid} of ${nrTotal} environment variable(s) are invalid:`,
       );
 
@@ -144,16 +140,16 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
                   "(No explanation given why it is invalid, check validate function!)";
 
                 const explanation = transformError
-                  ? `current raw value is ${formatValue(ri.currentValueRaw, chalk.red)}\n\t   → ${ri.reason}:\n\t     ${ri.transformError}`
+                  ? `current raw value is ${formatValue(ri.currentValueRaw, red)}\n\t   → ${ri.reason}:\n\t     ${ri.transformError}`
                   : !rawAndTransformedDiffer
-                    ? `current value is ${formatValue(ri.currentValueRaw, chalk.red)}\n\t   → ${ri.reason || noExplanationGiven}`
-                    : `current raw value is ${formatValue(ri.currentValueRaw, chalk.cyan)}, current transformed value is ${formatValue(ri.currentValueTransformed, chalk.red)}\n\t   → ${ri.reason || noExplanationGiven}`;
+                    ? `current value is ${formatValue(ri.currentValueRaw, red)}\n\t   → ${ri.reason || noExplanationGiven}`
+                    : `current raw value is ${formatValue(ri.currentValueRaw, cyan)}, current transformed value is ${formatValue(ri.currentValueTransformed, red)}\n\t   → ${ri.reason || noExplanationGiven}`;
 
-                return `\t*) ${chalk.bgRedBright(ri.envName)}\n\t   → ${explanation}`;
+                return `\t*) ${bgRedBright(ri.envName)}\n\t   → ${explanation}`;
               })
               .join("\n")}\n`;
 
-      const validMsg = chalk.green(
+      const validMsg = green(
         `${nrOfValid} of ${nrTotal} environment variable(s) are ok.`,
       );
 
@@ -167,7 +163,7 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
     }
 
     if (reportSuccess && (nrOfMissing === 0 || nrOfInvalid === 0)) {
-      const validMsg = chalk.green(
+      const validMsg = green(
         `${nrOfValid} of ${nrTotal} environment variable(s) are ok.`,
       );
       console.log(`${reportHeader}${validMsg}${reportFooter}`);
