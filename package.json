@@ -1,6 +1,6 @@
 {
   "name": "env-var-manager",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "A tiny helper tool that lets you define a set of environment variables including validation rules",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -25,11 +25,11 @@
     "dev": "yarn nodemon"
   },
   "devDependencies": {
-    "@types/node": "^22.9.1",
-    "nodemon": "^3.1.7",
-    "prettier": "^3.3.3",
+    "@types/node": "^22.10.2",
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2",
     "tsc-alias": "^1.8.10",
-    "typescript": "^5.6.3"
+    "typescript": "^5.7.2"
   },
   "dependencies": {
     "ansi-colors": "^4.1.3"
