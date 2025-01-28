@@ -1,5 +1,5 @@
 import { IEnvVarConfig } from "./types/IEnvVarConfig";
-import { bgRed, bgRedBright, blue, cyan, green, red } from "ansi-colors";
+import { bgRedBright, blue, cyan, green, red } from "ansi-colors";
 import { formatValue } from "./formatValue";
 
 export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
@@ -9,6 +9,11 @@ export class EnvVarManager<T extends string, C extends IEnvVarConfig<T>> {
   constructor(configs: C) {
     this.configs = configs;
   }
+
+  // Resetting a cache for env variables is rarely needed, use with caution!
+  resetCache = () => {
+    this.cache = {};
+  };
 
   getEnvVar<K extends T>(
     envVarName: K,
